@@ -6166,7 +6166,8 @@ async function toggleFullscreen() {
 }
 
 function resizeCanvas() {
-  const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+  // Cap render DPR for smoother performance on high-density displays.
+  const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 1.25));
   canvas.width = WIDTH * dpr;
   canvas.height = HEIGHT * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
