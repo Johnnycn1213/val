@@ -1,0 +1,37 @@
+# 哇！罗兰特
+
+一个零依赖的本地双人楼房攻防战原型，改成了室内多层建筑突入和固守玩法。
+
+## 启动方式
+
+直接用浏览器打开 [index.html](./index.html) 即可运行。
+
+## 操作
+
+- 玩家 1 `晓晓`
+  - 移动 / 楼梯：`W A S D`
+  - 射击：`F`
+  - 技能 / 布置 / 破门：`G`
+  - 切换武器或防御工具：`Q`
+- 玩家 2 `灰灰`
+  - 移动 / 楼梯：`方向键`
+  - 射击：`L`
+  - 技能 / 布置 / 破门：`K`
+  - 切换武器或防御工具：`O`
+
+## 玩法
+
+- 一方扮演攻方，一方扮演守方，支持按钮切换攻守。
+- 攻方有更强火力和防弹衣，目标是击倒守方或压住机房终端。
+- 守方可以封门、加固、布雷、架炮台和立路障，目标是拖到时间结束。
+- 整场是回合制攻防，按 `R` 开新一局。
+- 游戏使用浏览器原生 `Web Audio API` 合成音效，首次点击或按键后启用。
+
+## 素材来源
+
+- 公寓砖墙、窗户、门贴图：
+  - Brick Building（CC0）`https://opengameart.org/content/brick-building-1`
+- 侧视家具 SVG：
+  - Glitch furniture - Crappy（CC0）`https://opengameart.org/content/glitch-furniture-crappy`
+- 额外窗户贴图：
+  - Window texture（CC0）`https://opengameart.org/content/window-texture`

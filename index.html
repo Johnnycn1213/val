@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SB Game</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">2D 楼房攻防战</p>
+          <h1>SB Game</h1>
+          <p class="summary">ai仍然不稳定，仅用于测试。</p>
+          <div class="setup-panel">
+            <p class="role-status" id="role-status">当前：player1 攻方 / player2 守方</p>
+            <div class="button-row">
+              <button class="action-button" id="swap-roles" type="button">切换攻守</button>
+              <button class="action-button secondary" id="reset-series" type="button">重置战局</button>
+              <button class="action-button secondary" id="fullscreen-toggle" type="button">进入全屏</button>
+            </div>
+            <div class="mode-grid">
+              <label class="mode-field" for="player1-mode">
+                <span>player1 控制</span>
+                <select id="player1-mode">
+                  <option value="human">玩家</option>
+                  <option value="ai">AI</option>
+                </select>
+              </label>
+              <label class="mode-field" for="player2-mode">
+                <span>player2 控制</span>
+                <select id="player2-mode">
+                  <option value="human">玩家</option>
+                  <option value="ai">AI</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="hero-card" id="game-shell">
+          <canvas id="game" aria-label="SB Game 游戏画面"></canvas>
+        </div>
+      </section>
+
+      <section class="controls">
+        <article class="control-card player-one">
+          <h2>玩家 1：player1</h2>
+          <p><strong>移动 / 楼梯：</strong>W / A / S / D</p>
+          <p><strong>射击：</strong>F</p>
+          <p><strong>技能 / 布置 / 破门：</strong>G</p>
+          <p><strong>切换武器或防御工具：</strong>Q</p>
+        </article>
+        <article class="control-card player-two">
+          <h2>玩家 2：player2</h2>
+          <p><strong>移动 / 楼梯：</strong>方向键</p>
+          <p><strong>射击：</strong>L</p>
+          <p><strong>技能 / 布置 / 破门：</strong>K</p>
+          <p><strong>切换武器或防御工具：</strong>O</p>
+        </article>
+        <article class="control-card tips">
+          <h2>规则</h2>
+          <p>攻方按住技能键可在终端区压制进度，靠近加固门可破门。</p>
+          <p>守方靠近门可以封门或加固，不在门边时会布置防御工具。</p>
+          <p>守方拖到时间结束就赢，攻方击倒守方或控住机房就赢。</p>
+          <p>按 R 开新一局；点“切换攻守”可以立刻互换阵营。</p>
+          <p>首次点击或按键会启用音效。</p>
+        </article>
+      </section>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>
