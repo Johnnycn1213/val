@@ -360,6 +360,8 @@ let roundWinner = null;
 let roundReason = "";
 let message = { text: "切换攻守后会重开整场", timer: 220 };
 let lastTime = 0;
+let accumulatedTime = 0;
+let renderAlpha = 0;
 let capturePulse = 0;
 let elevator = null;
 
@@ -5264,6 +5266,11 @@ function updateCaptureFallback() {
 }
 
 function update() {
+  players.forEach((player) => {
+    player.prevRenderX = player.x;
+    player.prevRenderY = player.y;
+  });
+
   if (isPressed("r")) {
     if (matchOver) {
       resetSeries();
@@ -5760,10 +5767,12 @@ function drawObjective() {
 
 function drawPlayers() {
   players.forEach((player) => {
+    const renderX = player.prevRenderX === undefined ? player.x : player.prevRenderX + (player.x - player.prevRenderX) * renderAlpha;
+    const renderY = player.prevRenderY === undefined ? player.y : player.prevRenderY + (player.y - player.prevRenderY) * renderAlpha;
     const roleBand = player.role === "attacker" ? "#ffce76" : "#95ffb5";
     const height = getPlayerHeight(player);
-    const bodyX = player.x - PLAYER_W / 2;
-    const bodyY = player.y - height;
+    const bodyX = renderX - PLAYER_W / 2;
+    const bodyY = renderY - height;
 
     if (!player.alive) {
       ctx.globalAlpha = 0.25;
@@ -5778,14 +5787,14 @@ function drawPlayers() {
     ctx.fill();
 
     ctx.beginPath();
-    ctx.arc(player.x, bodyY + 14, 16, 0, Math.PI * 2);
+    ctx.arc(renderX, bodyY + 14, 16, 0, Math.PI * 2);
     ctx.fillStyle = player.accent;
     ctx.fill();
 
     ctx.fillStyle = roleBand;
     ctx.fillRect(bodyX + 4, bodyY + 34, PLAYER_W - 8, 6);
     ctx.fillStyle = "#0b1522";
-    ctx.fillRect(player.x + player.facing * 10, bodyY + 32, 24 * player.facing, 8);
+    ctx.fillRect(renderX + player.facing * 10, bodyY + 32, 24 * player.facing, 8);
 
     if (player.role === "attacker") {
       ctx.strokeStyle = "#ffd76b";
@@ -5809,18 +5818,18 @@ function drawPlayers() {
     ctx.fillStyle = "#eef4ff";
     ctx.font = "700 20px Trebuchet MS";
     ctx.textAlign = "center";
-    ctx.fillText(displayName, player.x, bodyY - 18);
+    ctx.fillText(displayName, renderX, bodyY - 18);
 
     ctx.font = "600 14px Trebuchet MS";
     ctx.fillStyle = roleBand;
-    ctx.fillText(getRoleTitle(player.role), player.x, bodyY - 2);
+    ctx.fillText(getRoleTitle(player.role), renderX, bodyY - 2);
     if (player.controlMode === "ai") {
       ctx.fillStyle = "rgba(238,244,255,0.72)";
       ctx.font = "600 12px Trebuchet MS";
-      ctx.fillText(`${player.aiState.fsmState || "Patrol"}:${player.aiState.actionId || "scan"}`, player.x, bodyY + 12);
+      ctx.fillText(`${player.aiState.fsmState || "Patrol"}:${player.aiState.actionId || "scan"}`, renderX, bodyY + 12);
     }
 
-    const barX = player.x - 46;
+    const barX = renderX - 46;
     const barY = bodyY - 40;
     ctx.fillStyle = "rgba(10,18,33,0.9)";
     roundRect(barX, barY, 92, 10, 5);
@@ -5908,16 +5917,18 @@ function drawAiDebug() {
 
 function drawBullets() {
   bullets.forEach((bullet) => {
+    const drawX = bullet.prevX + (bullet.x - bullet.prevX) * renderAlpha;
+    const drawY = bullet.prevY + (bullet.y - bullet.prevY) * renderAlpha;
     ctx.strokeStyle = bullet.trail;
     ctx.lineWidth = bullet.weaponId === "breacher" ? 4 : 3;
     ctx.beginPath();
     ctx.moveTo(bullet.prevX, bullet.prevY);
-    ctx.lineTo(bullet.x, bullet.y);
+    ctx.lineTo(drawX, drawY);
     ctx.stroke();
 
     ctx.fillStyle = bullet.color;
     ctx.beginPath();
-    ctx.arc(bullet.x, bullet.y, 4, 0, Math.PI * 2);
+    ctx.arc(drawX, drawY, 4, 0, Math.PI * 2);
     ctx.fill();
   });
 }
@@ -6166,8 +6177,8 @@ async function toggleFullscreen() {
 }
 
 function resizeCanvas() {
-  // Cap render DPR for smoother performance on high-density displays.
-  const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 1.25));
+  // Keep native-resolution rendering to reduce GPU fill-rate pressure.
+  const dpr = 1;
   canvas.width = WIDTH * dpr;
   canvas.height = HEIGHT * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -6240,14 +6251,23 @@ function loop(timestamp) {
   if (!lastTime) {
     lastTime = timestamp;
   }
-
-  const elapsed = timestamp - lastTime;
-  if (elapsed >= 1000 / 60) {
+  const elapsed = Math.min(100, timestamp - lastTime);
+  lastTime = timestamp;
+  accumulatedTime += elapsed;
+  const step = 1000 / 60;
+  let updates = 0;
+  while (accumulatedTime >= step && updates < 5) {
     update();
-    draw();
     keysPressed.clear();
-    lastTime = timestamp;
+    accumulatedTime -= step;
+    updates += 1;
   }
+  if (updates === 5 && accumulatedTime >= step) {
+    // Drop stale simulation backlog to keep controls responsive under heavy load.
+    accumulatedTime = 0;
+  }
+  renderAlpha = Math.max(0, Math.min(1, accumulatedTime / step));
+  draw();
 
   requestAnimationFrame(loop);
 }
